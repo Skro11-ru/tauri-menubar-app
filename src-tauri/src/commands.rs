@@ -108,6 +108,7 @@ mod desktop_commands {
 #[cfg(mobile)]
 mod mobile_commands {
     use super::*;
+    use tauri::AppHandle;
 
     #[tauri::command]
     pub fn increment_tray_counter(state: State<'_, AppState>) -> Result<u32, String> {
@@ -140,6 +141,24 @@ mod mobile_commands {
         *counter = 0;
         let count = *counter;
         Ok(count)
+    }
+
+    /// Badge count is a desktop-only feature on Android
+    #[tauri::command]
+    pub fn set_badge_count(_app: AppHandle, _count: u32) -> Result<(), String> {
+        Ok(())
+    }
+
+    /// Window pinning is a desktop-only feature on Android
+    #[tauri::command]
+    pub fn pin_window(_app: AppHandle) -> Result<(), String> {
+        Ok(())
+    }
+
+    /// Window unpinning is a desktop-only feature on Android
+    #[tauri::command]
+    pub fn unpin_window(_app: AppHandle) -> Result<(), String> {
+        Ok(())
     }
 }
 

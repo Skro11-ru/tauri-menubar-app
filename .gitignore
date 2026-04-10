@@ -26,6 +26,5 @@ dist-ssr
 # Qwen Code
 .qwen/
 
-# Tauri generated (desktop platforms)
-src-tauri/gen/apple/
-src-tauri/gen/schemas/
+# Tauri generated (mobile projects)
+src-tauri/gen/

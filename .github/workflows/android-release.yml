@@ -48,6 +48,9 @@ jobs:
       - name: Build frontend
         run: pnpm run build
 
+      - name: Initialize Android project
+        run: pnpm tauri android init --config src-tauri/tauri.mobile.conf.json
+
       - name: Create local.properties
         run: |
           echo "sdk.dir=$ANDROID_HOME" > src-tauri/gen/android/local.properties

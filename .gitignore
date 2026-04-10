@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Tauri generated (mobile projects)
+src-tauri/gen/

@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(rustup *)",
+      "Bash(pnpm *)",
+      "Bash(which *)",
+      "Bash(cargo check)"
+    ]
+  },
+  "$version": 3
+}

@@ -5,15 +5,20 @@
 
 mod commands;
 mod state;
+#[cfg(not(mobile))]
 mod tray;
+#[cfg(not(mobile))]
 mod window;
 
+#[cfg(not(mobile))]
 use state::AppState;
 
 #[cfg(target_os = "macos")]
 use tauri::ActivationPolicy;
+#[cfg(not(mobile))]
 use tauri_plugin_global_shortcut::ShortcutState;
 
+#[cfg(not(mobile))]
 fn main() {
     let global_shortcut = tauri_plugin_global_shortcut::Builder::new()
         .with_shortcut("CommandOrControl+Shift+Space")

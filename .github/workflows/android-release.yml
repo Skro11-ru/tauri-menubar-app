@@ -45,6 +45,9 @@ jobs:
       - name: Install frontend dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build frontend
+        run: pnpm run build
+
       - name: Initialize Android project
         run: pnpm tauri android init --config src-tauri/tauri.mobile.conf.json
 

@@ -25,3 +25,6 @@ dist-ssr
 
 # Tauri generated (mobile projects)
 src-tauri/gen/
+
+# Qwen Code
+.qwen/

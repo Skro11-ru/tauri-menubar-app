@@ -1,4 +1,5 @@
-import { ref, computed, type Ref } from "vue";
+import { ref, computed, watch, type Ref } from "vue";
+import { invoke } from "@tauri-apps/api/core";
 import { mockPasswords } from "../data/mockPasswords";
 import type { PasswordEntry, FilterType } from "../types/password";
 
@@ -48,6 +49,18 @@ export function usePasswords() {
     return result;
   });
 
+  // Count weak passwords for badge
+  const weakCount = computed(() => entries.value.filter((e) => e.isWeak).length);
+
+  // Update badge when weakCount changes
+  watch(weakCount, async (count) => {
+    try {
+      await invoke("set_badge_count", { count });
+    } catch {
+      // Silently fail - badge update is not critical
+    }
+  }, { immediate: true });
+
   function toggleExpand(id: string) {
     expandedId.value = expandedId.value === id ? null : id;
   }
@@ -70,6 +83,22 @@ export function usePasswords() {
     searchQuery.value = "";
   }
 
+  async function pinWindow() {
+    try {
+      await invoke("pin_window");
+    } catch {
+      // Silently fail
+    }
+  }
+
+  async function unpinWindow() {
+    try {
+      await invoke("unpin_window");
+    } catch {
+      // Silently fail
+    }
+  }
+
   return {
     entries: filteredEntries,
     searchQuery,
@@ -77,8 +106,11 @@ export function usePasswords() {
     expandedId,
     copiedEntryId,
     copiedFieldName,
+    weakCount,
     toggleExpand,
     copyToClipboard,
     clearSearch,
+    pinWindow,
+    unpinWindow,
   };
 }

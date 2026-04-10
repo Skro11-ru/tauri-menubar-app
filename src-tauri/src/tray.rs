@@ -1,7 +1,7 @@
 use std::sync::OnceLock;
 
 use tauri::image::Image;
-use tauri::menu::{MenuBuilder, MenuItem};
+use tauri::menu::{CheckMenuItemBuilder, MenuBuilder, MenuItem};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
 use tauri::{AppHandle, Manager};
 
@@ -15,10 +15,9 @@ static BASE_TRAY_ICON: OnceLock<TrayIconBase> = OnceLock::new();
 
 fn base_tray_icon() -> &'static TrayIconBase {
     BASE_TRAY_ICON.get_or_init(|| {
-        let icon =
-            Image::from_bytes(include_bytes!("../icons/32x32.png")).unwrap_or_else(|_| {
-                panic!("tray icon image is missing or invalid");
-            });
+        let icon = Image::from_bytes(include_bytes!("../icons/32x32.png")).unwrap_or_else(|_| {
+            panic!("tray icon image is missing or invalid");
+        });
 
         TrayIconBase {
             rgba: icon.rgba().to_vec(),
@@ -185,15 +184,19 @@ pub fn sync_counter_indicators<R: tauri::Runtime>(
     Ok(())
 }
 
-pub fn setup_tray<R: tauri::Runtime>(
-    app: &AppHandle<R>,
-) -> Result<(), Box<dyn std::error::Error>> {
-    let toggle_item = MenuItem::new(app, "Toggle", true, None::<&str>)?;
-    let quit_item = MenuItem::new(app, "Quit", true, None::<&str>)?;
-    let toggle_id = toggle_item.id().clone();
-    let quit_id = quit_item.id().clone();
+pub fn setup_tray<R: tauri::Runtime>(app: &AppHandle<R>) -> Result<(), Box<dyn std::error::Error>> {
+    let toggle_item = MenuItem::with_id(app, "toggle", "Toggle", true, None::<&str>)?;
+
+    let initial_auto_hide = crate::state::auto_hide_enabled();
+    let auto_hide_item = CheckMenuItemBuilder::with_id("auto_hide", "Auto-hide")
+        .checked(initial_auto_hide)
+        .build(app)?;
+
+    let quit_item = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
+
     let menu = MenuBuilder::new(app)
         .item(&toggle_item)
+        .item(&auto_hide_item)
         .separator()
         .item(&quit_item)
         .build()?;
@@ -208,11 +211,26 @@ pub fn setup_tray<R: tauri::Runtime>(
         .icon(icon)
         .icon_as_template(false)
         .show_menu_on_left_click(false)
-        .on_menu_event(move |app_handle, event| {
-            if event.id == toggle_id {
-                crate::window::toggle_main_window(app_handle);
-            } else if event.id == quit_id {
-                app_handle.exit(0);
+        .on_menu_event({
+            let auto_hide_item = auto_hide_item.clone();
+            move |app_handle, event| match event.id().0.as_str() {
+                "toggle" => {
+                    crate::window::toggle_main_window(app_handle);
+                }
+                "auto_hide" => {
+                    let current = crate::state::auto_hide_enabled();
+                    let next = !current;
+
+                    crate::state::set_auto_hide(next);
+
+                    if let Err(err) = auto_hide_item.set_checked(next) {
+                        eprintln!("failed to set auto_hide checked state: {err}");
+                    }
+                }
+                "quit" => {
+                    app_handle.exit(0);
+                }
+                _ => {}
             }
         })
         .on_tray_icon_event(|tray, event| {
@@ -228,6 +246,10 @@ pub fn setup_tray<R: tauri::Runtime>(
             }
         })
         .build(app)?;
+
+    if let Some(window) = app.get_webview_window("main") {
+        let _ = window.set_focusable(true);
+    }
 
     sync_counter_indicators(app, 0)?;
 

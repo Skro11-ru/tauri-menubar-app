@@ -19,7 +19,10 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             commands::increment_tray_counter,
             commands::decrement_tray_counter,
-            commands::reset_tray_counter
+            commands::reset_tray_counter,
+            commands::set_badge_count,
+            commands::pin_window,
+            commands::unpin_window,
         ])
         .setup(|_app| {
             // Initialize mobile-specific plugins here

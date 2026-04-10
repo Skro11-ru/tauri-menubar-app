@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { nextTick, onMounted, onUnmounted, ref } from "vue";
+import { getCurrentWindow } from "@tauri-apps/api/window";
+
 const props = defineProps<{
   modelValue: string;
   placeholder?: string;
@@ -10,10 +13,42 @@ const emit = defineEmits<{
   clear: [];
 }>();
 
+const inputRef = ref<HTMLInputElement | null>(null);
+const appWindow = getCurrentWindow();
+
+let unlistenFocus: null | (() => void) = null;
+
 function onInput(event: Event) {
   const target = event.target as HTMLInputElement;
   emit("update:modelValue", target.value);
 }
+
+async function focusInput() {
+  await nextTick();
+
+  requestAnimationFrame(() => {
+    inputRef.value?.focus();
+    inputRef.value?.select();
+  });
+}
+
+onMounted(async () => {
+  await focusInput();
+
+  unlistenFocus = await appWindow.onFocusChanged(async ({ payload: focused }) => {
+    if (!focused) {
+      return;
+    }
+
+    // окно получило фокус после show/set_focus
+    await focusInput();
+  });
+});
+
+onUnmounted(() => {
+  unlistenFocus?.();
+  unlistenFocus = null;
+});
 </script>
 
 <template>
@@ -27,13 +62,16 @@ function onInput(event: Event) {
         />
       </svg>
     </div>
+
     <input
+      ref="inputRef"
       type="text"
       class="search-input"
       :value="modelValue"
-      @input="onInput"
       :placeholder="placeholder"
+      @input="onInput"
     />
+
     <button v-if="modelValue" class="clear-button" @click="$emit('clear')">
       <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
         <path

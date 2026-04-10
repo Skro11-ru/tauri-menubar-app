@@ -1,4 +1,4 @@
-use tauri::{AppHandle, LogicalPosition, Manager, WindowEvent};
+use tauri::{AppHandle, Emitter, LogicalPosition, Manager, WindowEvent};
 
 pub fn show_main_window<R: tauri::Runtime>(app: &AppHandle<R>) -> Result<(), String> {
     let window = app
@@ -40,6 +40,9 @@ pub fn show_main_window<R: tauri::Runtime>(app: &AppHandle<R>) -> Result<(), Str
     window
         .set_focus()
         .map_err(|e| format!("Failed to focus window: {e}"))?;
+    window
+        .emit("focus-search-input", ())
+        .map_err(|e| format!("Failed to emit focus event: {e}"))?;
 
     Ok(())
 }
@@ -57,14 +60,13 @@ pub fn toggle_main_window<R: tauri::Runtime>(app: &AppHandle<R>) {
     let _ = show_main_window(app);
 }
 
-#[allow(clippy::needless_return)]
-pub fn handle_window_event(window: &tauri::Window, _event: &WindowEvent) {
+pub fn handle_window_event(window: &tauri::Window, event: &WindowEvent) {
     if window.label() != "main" {
         return;
     }
 
-    if let WindowEvent::Focused(false) = _event {
-        if window.is_visible().unwrap_or(false) {
+    if let WindowEvent::Focused(false) = event {
+        if crate::state::auto_hide_enabled() && window.is_visible().unwrap_or(false) {
             let _ = window.hide();
         }
     }

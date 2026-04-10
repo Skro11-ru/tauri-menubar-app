@@ -1,16 +1,21 @@
 use tauri::State;
 
+use crate::state::AppState;
 #[cfg(not(mobile))]
 use tauri::AppHandle;
-use crate::state::AppState;
 
 #[cfg(not(mobile))]
 mod desktop_commands {
     use super::*;
     use crate::tray::sync_counter_indicators;
+    use crate::window;
+    use tauri::Manager;
 
     #[tauri::command]
-    pub fn increment_tray_counter(state: State<'_, AppState>, app: AppHandle) -> Result<u32, String> {
+    pub fn increment_tray_counter(
+        state: State<'_, AppState>,
+        app: AppHandle,
+    ) -> Result<u32, String> {
         let mut counter = state
             .counter
             .lock()
@@ -22,7 +27,10 @@ mod desktop_commands {
     }
 
     #[tauri::command]
-    pub fn decrement_tray_counter(state: State<'_, AppState>, app: AppHandle) -> Result<u32, String> {
+    pub fn decrement_tray_counter(
+        state: State<'_, AppState>,
+        app: AppHandle,
+    ) -> Result<u32, String> {
         let mut counter = state
             .counter
             .lock()
@@ -43,6 +51,57 @@ mod desktop_commands {
         let count = *counter;
         sync_counter_indicators(&app, count)?;
         Ok(count)
+    }
+
+    #[tauri::command]
+    pub fn set_badge_count(app: AppHandle, count: u32) -> Result<(), String> {
+        sync_counter_indicators(&app, count)?;
+        Ok(())
+    }
+
+    #[tauri::command]
+    pub fn cmd_front_hide(app: AppHandle) -> Result<(), String> {
+        let window = app
+            .get_webview_window("main")
+            .ok_or("Main window not found")?;
+
+        window
+            .hide()
+            .map_err(|e| format!("Failed to hide window: {e}"))?;
+
+        Ok(())
+    }
+
+    #[tauri::command]
+    pub fn pin_window(app: AppHandle) -> Result<(), String> {
+        if let Some(window) = app.get_webview_window("main") {
+            window
+                .set_resizable(true)
+                .map_err(|e| format!("Failed to set resizable: {e}"))?;
+            window
+                .set_always_on_top(false)
+                .map_err(|e| format!("Failed to set always on top: {e}"))?;
+            window
+                .set_skip_taskbar(false)
+                .map_err(|e| format!("Failed to set skip taskbar: {e}"))?;
+        }
+        Ok(())
+    }
+
+    #[tauri::command]
+    pub fn unpin_window(app: AppHandle) -> Result<(), String> {
+        if let Some(window) = app.get_webview_window("main") {
+            window
+                .set_resizable(false)
+                .map_err(|e| format!("Failed to set resizable: {e}"))?;
+            window
+                .set_always_on_top(true)
+                .map_err(|e| format!("Failed to set always on top: {e}"))?;
+            window
+                .set_skip_taskbar(true)
+                .map_err(|e| format!("Failed to set skip taskbar: {e}"))?;
+        }
+        Ok(())
     }
 }
 

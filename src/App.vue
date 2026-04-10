@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref } from "vue";
 import { usePasswords } from "./composables/usePasswords";
 import HeaderBar from "./components/HeaderBar.vue";
 import SearchField from "./components/SearchField.vue";
@@ -13,16 +14,31 @@ const {
   expandedId,
   copiedEntryId,
   copiedFieldName,
+  weakCount,
   toggleExpand,
   copyToClipboard,
   clearSearch,
+  pinWindow,
+  unpinWindow,
 } = usePasswords();
+
+const isPinned = ref(false);
+
+async function togglePin() {
+  if (isPinned.value) {
+    await unpinWindow();
+    isPinned.value = false;
+  } else {
+    await pinWindow();
+    isPinned.value = true;
+  }
+}
 </script>
 
 <template>
   <div class="app-container">
     <!-- Header -->
-    <HeaderBar />
+    <HeaderBar :is-pinned="isPinned" @toggle-pin="togglePin" />
 
     <!-- Search -->
     <div class="search-wrapper">

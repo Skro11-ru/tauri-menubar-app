@@ -9,7 +9,7 @@ export interface PasswordEntry {
   hasPasskey: boolean;
   isWeak: boolean;
   isReused: boolean;
-  lastUpdated: string; // e.g. "3d ago", "2w ago"
+  updatedAt: string;
   isFrequentlyUsed: boolean;
   notes?: string;
 }

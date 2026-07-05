@@ -25,8 +25,8 @@
 ## Запуск в режиме разработки
 
 ```bash
-bun install
-bun tauri dev
+pnpm install
+pnpm tauri dev
 ```
 
 ## Сборка для установки
@@ -34,7 +34,7 @@ bun tauri dev
 ### macOS (.app / .dmg)
 
 ```bash
-bun tauri build
+pnpm tauri build
 ```
 
 Результат:
@@ -45,7 +45,7 @@ bun tauri build
 ### Windows (.exe / .msi)
 
 ```bash
-bun tauri build
+pnpm tauri build
 ```
 
 Результат:
@@ -56,7 +56,7 @@ bun tauri build
 ### Linux (.deb / .AppImage)
 
 ```bash
-bun tauri build
+pnpm tauri build
 ```
 
 Результат:
@@ -67,16 +67,16 @@ bun tauri build
 > **Примечание:** Для сборки под конкретную платформу используйте флаг `--target`:
 >
 > ```bash
-> bun tauri build --target universal-apple-darwin    # macOS Universal
-> bun tauri build --target aarch64-apple-darwin      # macOS Apple Silicon
-> bun tauri build --target x86_64-pc-windows-msvc    # Windows x64
+> pnpm tauri build --target universal-apple-darwin    # macOS Universal
+> pnpm tauri build --target aarch64-apple-darwin      # macOS Apple Silicon
+> pnpm tauri build --target x86_64-pc-windows-msvc    # Windows x64
 > ```
 
 ## Линтинг
 
 ```bash
 # Фронтенд (oxc)
-bun run lint
+pnpm run lint
 
 # Бэкенд (clippy)
 cd src-tauri && cargo clippy
@@ -97,11 +97,21 @@ src/
 │   └── password.ts        # Типы для паролей
 ├── data/
 │   └── mockPasswords.ts   # Моковые данные
+├── services/
+│   └── tauriCommands.ts   # Типизированные вызовы Tauri-команд
+├── utils/
+│   └── passwordDates.ts   # Форматирование и фильтрация дат
 ├── composables/
-│   ├── useCounter.ts      # Composable для счётчика
-│   └── usePasswords.ts    # Composable для паролей
+│   ├── useBadgeCount.ts
+│   ├── useClipboardFeedback.ts
+│   ├── usePasswordEntries.ts
+│   ├── usePasswordFilters.ts
+│   ├── useWindowControls.ts
+│   └── useWindowFocus.ts
 ├── components/
+│   ├── EmptyState.vue     # Пустые состояния
 │   ├── HeaderBar.vue      # Заголовок
+│   ├── PasswordList.vue   # Список карточек
 │   ├── SearchField.vue    # Поле поиска
 │   ├── FilterRow.vue      # Фильтры-чипы
 │   └── PasswordCard.vue   # Карточка пароля

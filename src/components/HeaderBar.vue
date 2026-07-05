@@ -1,40 +1,21 @@
 <script setup lang="ts">
-import { invoke } from "@tauri-apps/api/core";
-import { getCurrentWindow } from "@tauri-apps/api/window";
-
 const props = defineProps<{
   isPinned: boolean;
 }>();
 
 const emit = defineEmits<{
   togglePin: [];
+  close: [];
+  startDrag: [event: MouseEvent];
 }>();
-const appWindow = getCurrentWindow();
-
-async function startDrag(event: MouseEvent) {
-  if (props.isPinned) {
-    return;
-  }
-  if (event.button !== 0) {
-    return;
-  }
-
-  try {
-    await appWindow.startDragging();
-  } catch (error) {
-    console.error("Failed to start dragging window:", error);
-  }
-}
-
-async function closeWindow() {
-  try {
-    await invoke("cmd_front_hide");
-  } catch (error) {}
-}
 </script>
 
 <template>
-  <div class="header" @mousedown="startDrag" :class="{ '--can-move': !props.isPinned }">
+  <div
+    class="header"
+    :class="{ '--can-move': !props.isPinned }"
+    @mousedown="emit('startDrag', $event)"
+  >
     <h1 class="header-title">Passwords</h1>
 
     <div class="header-actions">
@@ -79,7 +60,7 @@ async function closeWindow() {
         </svg>
       </button>
 
-      <button class="header-action close-button" title="Закрыть окно" @click="closeWindow">
+      <button class="header-action close-button" title="Закрыть окно" @click="emit('close')">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="32"

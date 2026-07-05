@@ -32,15 +32,7 @@ fn main() {
 
     tauri::Builder::default()
         .manage(AppState::default())
-        .invoke_handler(tauri::generate_handler![
-            commands::increment_tray_counter,
-            commands::decrement_tray_counter,
-            commands::reset_tray_counter,
-            commands::set_badge_count,
-            commands::pin_window,
-            commands::unpin_window,
-            commands::cmd_front_hide,
-        ])
+        .invoke_handler(crate::generate_app_invoke_handler!())
         .on_window_event(window::handle_window_event)
         .setup(move |app| {
             #[cfg(target_os = "macos")]

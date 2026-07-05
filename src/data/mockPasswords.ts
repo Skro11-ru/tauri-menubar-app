@@ -1,5 +1,8 @@
 import type { PasswordEntry } from "../types/password";
 
+const hoursAgo = (hours: number) => new Date(Date.now() - hours * 60 * 60 * 1000).toISOString();
+const daysAgo = (days: number) => hoursAgo(days * 24);
+
 export const mockPasswords: PasswordEntry[] = [
   {
     id: "1",
@@ -12,7 +15,7 @@ export const mockPasswords: PasswordEntry[] = [
     hasPasskey: false,
     isWeak: false,
     isReused: false,
-    lastUpdated: "2d ago",
+    updatedAt: daysAgo(2),
     isFrequentlyUsed: true,
   },
   {
@@ -26,7 +29,7 @@ export const mockPasswords: PasswordEntry[] = [
     hasPasskey: true,
     isWeak: false,
     isReused: false,
-    lastUpdated: "5d ago",
+    updatedAt: daysAgo(5),
     isFrequentlyUsed: true,
   },
   {
@@ -40,7 +43,7 @@ export const mockPasswords: PasswordEntry[] = [
     hasPasskey: false,
     isWeak: false,
     isReused: false,
-    lastUpdated: "1w ago",
+    updatedAt: daysAgo(7),
     isFrequentlyUsed: true,
   },
   {
@@ -54,7 +57,7 @@ export const mockPasswords: PasswordEntry[] = [
     hasPasskey: true,
     isWeak: false,
     isReused: false,
-    lastUpdated: "3d ago",
+    updatedAt: daysAgo(3),
     isFrequentlyUsed: false,
   },
   {
@@ -68,7 +71,7 @@ export const mockPasswords: PasswordEntry[] = [
     hasPasskey: false,
     isWeak: false,
     isReused: true,
-    lastUpdated: "1d ago",
+    updatedAt: daysAgo(1),
     isFrequentlyUsed: true,
   },
   {
@@ -82,7 +85,7 @@ export const mockPasswords: PasswordEntry[] = [
     hasPasskey: false,
     isWeak: false,
     isReused: false,
-    lastUpdated: "4d ago",
+    updatedAt: daysAgo(4),
     isFrequentlyUsed: true,
   },
   {
@@ -96,7 +99,7 @@ export const mockPasswords: PasswordEntry[] = [
     hasPasskey: false,
     isWeak: false,
     isReused: false,
-    lastUpdated: "2w ago",
+    updatedAt: daysAgo(14),
     isFrequentlyUsed: false,
   },
   {
@@ -110,7 +113,7 @@ export const mockPasswords: PasswordEntry[] = [
     hasPasskey: true,
     isWeak: false,
     isReused: false,
-    lastUpdated: "6h ago",
+    updatedAt: hoursAgo(6),
     isFrequentlyUsed: false,
     notes: "API key: sk-...",
   },
@@ -125,7 +128,7 @@ export const mockPasswords: PasswordEntry[] = [
     hasPasskey: false,
     isWeak: false,
     isReused: false,
-    lastUpdated: "3w ago",
+    updatedAt: daysAgo(21),
     isFrequentlyUsed: false,
   },
   {
@@ -139,7 +142,7 @@ export const mockPasswords: PasswordEntry[] = [
     hasPasskey: true,
     isWeak: true,
     isReused: false,
-    lastUpdated: "1d ago",
+    updatedAt: daysAgo(1),
     isFrequentlyUsed: false,
   },
   {
@@ -153,7 +156,7 @@ export const mockPasswords: PasswordEntry[] = [
     hasPasskey: false,
     isWeak: false,
     isReused: false,
-    lastUpdated: "5d ago",
+    updatedAt: daysAgo(5),
     isFrequentlyUsed: false,
   },
   {
@@ -167,7 +170,7 @@ export const mockPasswords: PasswordEntry[] = [
     hasPasskey: false,
     isWeak: true,
     isReused: true,
-    lastUpdated: "2d ago",
+    updatedAt: daysAgo(2),
     isFrequentlyUsed: false,
   },
   {
@@ -181,7 +184,7 @@ export const mockPasswords: PasswordEntry[] = [
     hasPasskey: false,
     isWeak: false,
     isReused: false,
-    lastUpdated: "1w ago",
+    updatedAt: daysAgo(7),
     isFrequentlyUsed: false,
   },
   {
@@ -195,7 +198,7 @@ export const mockPasswords: PasswordEntry[] = [
     hasPasskey: false,
     isWeak: false,
     isReused: true,
-    lastUpdated: "3d ago",
+    updatedAt: daysAgo(3),
     isFrequentlyUsed: true,
   },
   {
@@ -209,7 +212,7 @@ export const mockPasswords: PasswordEntry[] = [
     hasPasskey: false,
     isWeak: false,
     isReused: false,
-    lastUpdated: "2w ago",
+    updatedAt: daysAgo(14),
     isFrequentlyUsed: false,
   },
   {
@@ -223,7 +226,7 @@ export const mockPasswords: PasswordEntry[] = [
     hasPasskey: false,
     isWeak: true,
     isReused: false,
-    lastUpdated: "1mo ago",
+    updatedAt: daysAgo(30),
     isFrequentlyUsed: false,
   },
 ];

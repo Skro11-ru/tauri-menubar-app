@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import type { PasswordEntry } from "../types/password";
+import { formatUpdatedAt } from "../utils/passwordDates";
 
 const props = defineProps<{
   entry: PasswordEntry;
@@ -32,7 +33,7 @@ const maskedPassword = computed(() => {
 });
 
 const badges = computed(() => {
-  const items: { label: string; variant: string }[] = [];
+  const items: { label: string; variant: "neutral" | "warning" }[] = [];
   if (props.entry.has2FA) {
     items.push({ label: "2FA", variant: "neutral" });
   }
@@ -48,8 +49,8 @@ const badges = computed(() => {
   return items;
 });
 
-const isCopied = computed(() => {
-  return props.copiedEntryId === props.entry.id;
+const updatedLabel = computed(() => {
+  return formatUpdatedAt(props.entry.updatedAt);
 });
 
 function isFieldCopied(field: string): boolean {
@@ -78,7 +79,7 @@ function isFieldCopied(field: string): boolean {
         <span v-for="badge in badges" :key="badge.label" class="badge" :class="badge.variant">
           {{ badge.label }}
         </span>
-        <span class="last-updated">{{ entry.lastUpdated }}</span>
+        <span class="last-updated">{{ updatedLabel }}</span>
       </div>
     </div>
 

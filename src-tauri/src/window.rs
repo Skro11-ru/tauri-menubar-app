@@ -1,4 +1,4 @@
-use tauri::{AppHandle, Emitter, LogicalPosition, Manager, WindowEvent};
+use tauri::{AppHandle, LogicalPosition, Manager, WindowEvent};
 
 pub fn show_main_window<R: tauri::Runtime>(app: &AppHandle<R>) -> Result<(), String> {
     let window = app
@@ -40,10 +40,6 @@ pub fn show_main_window<R: tauri::Runtime>(app: &AppHandle<R>) -> Result<(), Str
     window
         .set_focus()
         .map_err(|e| format!("Failed to focus window: {e}"))?;
-    window
-        .emit("focus-search-input", ())
-        .map_err(|e| format!("Failed to emit focus event: {e}"))?;
-
     Ok(())
 }
 

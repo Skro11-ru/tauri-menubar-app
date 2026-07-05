@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { nextTick, onMounted, onUnmounted, ref } from "vue";
-import { getCurrentWindow } from "@tauri-apps/api/window";
+import { nextTick, onMounted, ref } from "vue";
+import { useWindowFocus } from "../composables/useWindowFocus";
 
 const props = defineProps<{
   modelValue: string;
   placeholder?: string;
-  hasResults?: number;
 }>();
 
 const emit = defineEmits<{
@@ -14,9 +13,6 @@ const emit = defineEmits<{
 }>();
 
 const inputRef = ref<HTMLInputElement | null>(null);
-const appWindow = getCurrentWindow();
-
-let unlistenFocus: null | (() => void) = null;
 
 function onInput(event: Event) {
   const target = event.target as HTMLInputElement;
@@ -34,21 +30,9 @@ async function focusInput() {
 
 onMounted(async () => {
   await focusInput();
-
-  unlistenFocus = await appWindow.onFocusChanged(async ({ payload: focused }) => {
-    if (!focused) {
-      return;
-    }
-
-    // окно получило фокус после show/set_focus
-    await focusInput();
-  });
 });
 
-onUnmounted(() => {
-  unlistenFocus?.();
-  unlistenFocus = null;
-});
+useWindowFocus(focusInput);
 </script>
 
 <template>

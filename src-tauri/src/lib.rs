@@ -16,14 +16,7 @@ use state::AppState;
 pub fn run() {
     tauri::Builder::default()
         .manage(AppState::default())
-        .invoke_handler(tauri::generate_handler![
-            commands::increment_tray_counter,
-            commands::decrement_tray_counter,
-            commands::reset_tray_counter,
-            commands::set_badge_count,
-            commands::pin_window,
-            commands::unpin_window,
-        ])
+        .invoke_handler(crate::generate_app_invoke_handler!())
         .setup(|_app| {
             // Initialize mobile-specific plugins here
             Ok(())

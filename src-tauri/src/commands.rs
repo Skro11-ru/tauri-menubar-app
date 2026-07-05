@@ -4,26 +4,51 @@ use crate::state::AppState;
 #[cfg(not(mobile))]
 use tauri::AppHandle;
 
+#[macro_export]
+macro_rules! generate_app_invoke_handler {
+    () => {
+        tauri::generate_handler![
+            crate::commands::increment_tray_counter,
+            crate::commands::decrement_tray_counter,
+            crate::commands::reset_tray_counter,
+            crate::commands::set_badge_count,
+            crate::commands::pin_window,
+            crate::commands::unpin_window,
+            crate::commands::cmd_front_hide,
+        ]
+    };
+}
+
 #[cfg(not(mobile))]
 mod desktop_commands {
     use super::*;
     use crate::tray::sync_counter_indicators;
-    use crate::window;
     use tauri::Manager;
+
+    fn update_counter(
+        state: State<'_, AppState>,
+        app: AppHandle,
+        update: impl FnOnce(u32) -> u32,
+    ) -> Result<u32, String> {
+        let mut counter = state
+            .counter
+            .lock()
+            .map_err(|e| format!("Failed to lock counter: {e}"))?;
+
+        *counter = update(*counter);
+        let count = *counter;
+
+        sync_counter_indicators(&app, count)?;
+
+        Ok(count)
+    }
 
     #[tauri::command]
     pub fn increment_tray_counter(
         state: State<'_, AppState>,
         app: AppHandle,
     ) -> Result<u32, String> {
-        let mut counter = state
-            .counter
-            .lock()
-            .map_err(|e| format!("Failed to lock counter: {e}"))?;
-        *counter = counter.saturating_add(1);
-        let count = *counter;
-        sync_counter_indicators(&app, count)?;
-        Ok(count)
+        update_counter(state, app, |count| count.saturating_add(1))
     }
 
     #[tauri::command]
@@ -31,26 +56,12 @@ mod desktop_commands {
         state: State<'_, AppState>,
         app: AppHandle,
     ) -> Result<u32, String> {
-        let mut counter = state
-            .counter
-            .lock()
-            .map_err(|e| format!("Failed to lock counter: {e}"))?;
-        *counter = counter.saturating_sub(1);
-        let count = *counter;
-        sync_counter_indicators(&app, count)?;
-        Ok(count)
+        update_counter(state, app, |count| count.saturating_sub(1))
     }
 
     #[tauri::command]
     pub fn reset_tray_counter(state: State<'_, AppState>, app: AppHandle) -> Result<u32, String> {
-        let mut counter = state
-            .counter
-            .lock()
-            .map_err(|e| format!("Failed to lock counter: {e}"))?;
-        *counter = 0;
-        let count = *counter;
-        sync_counter_indicators(&app, count)?;
-        Ok(count)
+        update_counter(state, app, |_| 0)
     }
 
     #[tauri::command]
@@ -110,37 +121,33 @@ mod mobile_commands {
     use super::*;
     use tauri::AppHandle;
 
-    #[tauri::command]
-    pub fn increment_tray_counter(state: State<'_, AppState>) -> Result<u32, String> {
+    fn update_counter(
+        state: State<'_, AppState>,
+        update: impl FnOnce(u32) -> u32,
+    ) -> Result<u32, String> {
         let mut counter = state
             .counter
             .lock()
             .map_err(|e| format!("Failed to lock counter: {e}"))?;
-        *counter = counter.saturating_add(1);
-        let count = *counter;
-        Ok(count)
+
+        *counter = update(*counter);
+
+        Ok(*counter)
+    }
+
+    #[tauri::command]
+    pub fn increment_tray_counter(state: State<'_, AppState>) -> Result<u32, String> {
+        update_counter(state, |count| count.saturating_add(1))
     }
 
     #[tauri::command]
     pub fn decrement_tray_counter(state: State<'_, AppState>) -> Result<u32, String> {
-        let mut counter = state
-            .counter
-            .lock()
-            .map_err(|e| format!("Failed to lock counter: {e}"))?;
-        *counter = counter.saturating_sub(1);
-        let count = *counter;
-        Ok(count)
+        update_counter(state, |count| count.saturating_sub(1))
     }
 
     #[tauri::command]
     pub fn reset_tray_counter(state: State<'_, AppState>) -> Result<u32, String> {
-        let mut counter = state
-            .counter
-            .lock()
-            .map_err(|e| format!("Failed to lock counter: {e}"))?;
-        *counter = 0;
-        let count = *counter;
-        Ok(count)
+        update_counter(state, |_| 0)
     }
 
     /// Badge count is a desktop-only feature on Android
@@ -158,6 +165,12 @@ mod mobile_commands {
     /// Window unpinning is a desktop-only feature on Android
     #[tauri::command]
     pub fn unpin_window(_app: AppHandle) -> Result<(), String> {
+        Ok(())
+    }
+
+    /// Hiding the desktop popover is not available on mobile.
+    #[tauri::command]
+    pub fn cmd_front_hide(_app: AppHandle) -> Result<(), String> {
         Ok(())
     }
 }

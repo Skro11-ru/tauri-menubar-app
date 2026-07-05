@@ -22,6 +22,12 @@ jobs:
           node-version: 22
           cache: pnpm
 
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
@@ -31,9 +37,6 @@ jobs:
         uses: swatinem/rust-cache@v2
         with:
           workspaces: "./src-tauri -> target"
-
-      - name: Install cargo-ndk
-        run: cargo install cargo-ndk
 
       - name: Setup Android NDK
         uses: nttld/setup-ndk@v1
@@ -45,9 +48,6 @@ jobs:
       - name: Install frontend dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build frontend
-        run: pnpm run build
-
       - name: Initialize Android project
         run: pnpm tauri android init --config src-tauri/tauri.mobile.conf.json
 
@@ -55,32 +55,16 @@ jobs:
         run: |
           echo "sdk.dir=$ANDROID_HOME" > src-tauri/gen/android/local.properties
 
-      - name: Build Rust libraries for all Android architectures
-        run: |
-          cd src-tauri
-          cargo ndk \
-            -t arm64-v8a \
-            -t armeabi-v7a \
-            -t x86_64 \
-            -t x86 \
-            -o gen/android/app/src/main/jniLibs/ \
-            build --release --lib
-
       - name: Build debug APK
-        run: |
-          cd src-tauri/gen/android
-          chmod +x gradlew
-          ./gradlew assembleDebug -x rustBuildArm64Debug -x rustBuildArmDebug -x rustBuildX86_64Debug -x rustBuildX86Debug
+        env:
+          ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+          NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+        run: pnpm tauri android build --debug --config src-tauri/tauri.mobile.conf.json
 
       - name: Upload APK artifacts
         uses: actions/upload-artifact@v4
         with:
           name: android-apk
-          path: |
-            src-tauri/gen/android/app/build/outputs/apk/arm64/debug/app-arm64-debug.apk
-            src-tauri/gen/android/app/build/outputs/apk/arm/debug/app-arm-debug.apk
-            src-tauri/gen/android/app/build/outputs/apk/x86_64/debug/app-x86_64-debug.apk
-            src-tauri/gen/android/app/build/outputs/apk/x86/debug/app-x86-debug.apk
-            src-tauri/gen/android/app/build/outputs/apk/universal/debug/app-universal-debug.apk
+          path: src-tauri/gen/android/app/build/outputs/apk/**/*.apk
           if-no-files-found: error
           retention-days: 30
